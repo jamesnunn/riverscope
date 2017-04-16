@@ -91,3 +91,6 @@ venv*
 
 # sublime project and workspace files
 *.sublime*
+
+# blobs, databases etc
+db.sqlite3

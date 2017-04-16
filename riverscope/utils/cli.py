@@ -11,8 +11,8 @@ import sys
 import redis
 import logger
 
-from utils import utils
-from _version import __app_name__, __version__
+from riverscope.utils import utils
+from riverscope._version import __app_name__, __version__
 
 LOG = logger.FilePrintLogger('cache_stations')
 
@@ -55,7 +55,7 @@ def cache_stations():
         print('Also getting typical range. This will take several minutes.')
 
     time_start = utils.start_timer()
-    stations = utils.cache_river_stations(args.with_typical_range)
+    stations = utils.get_river_stations(args.with_typical_range)
     conn_params = [args.host]
     counter = 0
     try:

@@ -119,7 +119,7 @@ def get_url_json_response(url):
     return requests.get(url).json()
 
 
-def cache_river_stations(with_typical_range=False):
+def get_river_stations(with_typical_range=False):
     """Create a generator returning a tuple of notation, station_dict for each
     station returned by the EA stations API call.
 
