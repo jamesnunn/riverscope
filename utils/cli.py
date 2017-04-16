@@ -55,14 +55,15 @@ def cache_stations():
         print('Also getting typical range. This will take several minutes.')
 
     time_start = utils.start_timer()
-    stations = utils.get_river_stations(args.with_typical_range)
+    stations = utils.get_river_stations(args.with_typical_range, parameter='level',
+                                        qualifier='Stage', limit=10000)
     conn_params = [args.host]
     counter = 0
     try:
         LOG.debug('Connecting to Redis on {}...'.format(', '.join(conn_params)))
         conn = redis.StrictRedis('localhost')
-        for notation, station in stations:
-            conn.hmset(notation, station)
+        for station in stations:
+            print(station)
             counter += 1
     except redis.exceptions.ConnectionError as err:
         LOG.error(err)

@@ -20,7 +20,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '_ltsfge1h*gf)_xhenhd1yza_^^b+_u&*xz@@m__uns#2w&1!5'
+SECRET_KEY = os.environ['RIVERSCOPE_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.gis',
     'stations.apps.StationsConfig',
 ]
 
@@ -76,8 +77,12 @@ WSGI_APPLICATION = 'riverscope.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': 'riverscope',
+        'USER': 'riverscopeowner',
+        'PASSWORD': os.environ['RIVERSCOPE_PW'],
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 

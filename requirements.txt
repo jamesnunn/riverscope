@@ -1,4 +1,5 @@
 redis
 requests
 django
+psycopg2
 -e git://www.github.com/jamesnunn/logger.git@master#egg=logger

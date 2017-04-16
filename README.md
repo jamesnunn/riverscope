@@ -9,6 +9,35 @@ This application is built using Django and Python 3
 ## Installation
 
 ```bash
+# Designed for Ubuntu, install the required dependency packages
+$ sudo apt-get update
+$ sudo apt-get install libpq-dev postgresql postgresql-contrib postgis*
+# Set up the database owner for RiverScope
+$ sudo su - postgres
+$ psql
+```
+
+```psql
+postgres=# CREATE USER riverscopeowner WITH PASSWORD 'password';
+postgres=# ALTER ROLE riverscopeowner SET client_encoding TO 'utf8';
+postgres=# ALTER ROLE riverscopeowner SET default_transaction_isolation TO 'read committed';
+postgres=# ALTER ROLE riverscopeowner SET timezone TO 'UTC';
+postgres=# CREATE DATABASE riverscope OWNER riverscopeowner;
+postgres=# \connect riverscope;
+riverscope=# CREATE EXTENSION postgis;
+postgres=# \q;
+```
+
+```bash
+# Check that we can login to the db with psql
+$ psql -U riverscopeowner -h localhost -d riverscope
+```
+
+```psql
+riverscope=> \q
+```
+
+```bash
 # Clone the repo
 $ git clone https://github.com/jamesnunn/riverscope.git
 # Change into the cloned repo
@@ -21,6 +50,13 @@ $ source venv_riverscope/bin/activate
 $ pip install -r requirements.txt
 # Install development dependencies
 $ pip install -r requirements_dev.txt
-# Run tests
-$ pytest test
+# Apply migrations to db
+$ python manage.py makemigrations
+$ python manage.py migrate
+# Set up a superuser and start the server
+$ python manage.py createsuperuser
+$ python manage.py runserver
 ```
+
+## Run tests
+$ pytest test

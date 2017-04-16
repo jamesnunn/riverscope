@@ -38,12 +38,11 @@ def test_stations_url_raises():
     with pytest.raises(utils.ParameterError):
         utils.stations_url(status='blah')
 
-def test_get_url_response_something():
-    url = utils.stations_url(station_ref='E8360')
-    resp = utils.get_url_json_response(url)['items'][0]['label']
-    assert resp == 'Uckfield Mill upstream'
+def test_get_river_stations_something():
+    stns = list(utils.get_river_stations(station_ref='E8360'))
+    label = stns[0].label
+    assert label == 'Uckfield Mill upstream'
 
-def test_get_url_response_nothing():
-    url = utils.stations_url(station_ref='E8360', search='blah')
-    resp = utils.get_url_json_response(url)['items']
-    assert resp == []
+def test_get_river_stations_nothing():
+    stns = list(utils.get_river_stations(station_ref='E8360', search='blah'))
+    assert stns == []

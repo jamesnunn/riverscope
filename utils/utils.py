@@ -1,3 +1,4 @@
+from collections import namedtuple
 import requests
 import time
 import urllib
@@ -13,6 +14,10 @@ STATION_TYPES = ('SingleLevel', 'MultiTraceLevel', 'Coastal', 'Groundwater', 'Me
 
 class ParameterError(Exception):
     pass
+
+
+Station = namedtuple('Station', 'station_ref rloiid url town river_name '
+                     'label lat lon stage_scale_url typical_low typical_high')
 
 
 def stations_url(rloiid=None, search=None, qualifier=None, status=None,
@@ -119,16 +124,17 @@ def get_url_json_response(url):
     return requests.get(url).json()
 
 
-def get_river_stations(with_typical_range=False):
-    """Create a generator returning a tuple of notation, station_dict for each
-    station returned by the EA stations API call.
+def get_river_stations(with_typical_range=False, **kwargs):
+    """Create a generator returning a Station object for each station found.
 
-    args:
+    kwargs:
         with_typical_range: If true, also collects the typical min/max
             levels of the station. Warning, this is a much more lengthy query
             as it makes a request per station (~1800).
+        All other kwargs are passed to stations_url function call.
+
     """
-    stn_url = stations_url(parameter='level', qualifier='Stage', limit=10000)
+    stn_url = stations_url(**kwargs)
     stations = get_url_json_response(stn_url)
 
     for station in stations['items']:
@@ -139,7 +145,8 @@ def get_river_stations(with_typical_range=False):
         town = station.get('town')
         label = station.get('label')
         stage_scale_url = station.get('stageScale')
-        notation = station['notation']
+        station_ref = station['stationReference']
+        rloiid = station.get('RLOIid')
         try:
             lat = float(station['lat'])
             lon = float(station['long'])
@@ -161,12 +168,10 @@ def get_river_stations(with_typical_range=False):
                 typical_low = stage_scale['items']['typicalRangeLow']
                 typical_high = stage_scale['items']['typicalRangeHigh']
 
-        station_dict = {'town': town, 'river_name': river_name, 'label': label,
-                        'lat': lat, 'lon': lon, 'stage_scale_url': stage_scale_url,
-                        'typical_low': typical_low , 'typical_high': typical_high,
-                        'url': url, 'latest': None, 'penultimate': None}
+        station = Station(station_ref, rloiid, url, town, river_name, label,
+                          lat, lon, stage_scale_url, typical_low, typical_high)
 
-        yield notation, station_dict
+        yield station
 
 
 def start_timer():
