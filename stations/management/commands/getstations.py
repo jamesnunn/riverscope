@@ -39,7 +39,6 @@ class Command(BaseCommand):
             LOG.set_print_handler_level(logging.INFO)
             LOG.set_file_handler(log_path, logging.INFO)
 
-        LOG.info('Getting stations...')
         counter = 0
         count_created = 0
         count_updated = 0
@@ -60,12 +59,12 @@ class Command(BaseCommand):
                     station_ref=stn_ref,
                     point=GEOSGeometry('POINT ({} {})'.format(*stn_pt)),
                     defaults=stn_dict)
-                updated = stn_dict != old_dict
             except OperationalError as err:
                 LOG.error('ERROR: ' + ' '.join((str(err).split())))
                 sys.exit(1)
 
-            # only save if there are changes to save writes
+            # only save if there are changes, to reduce writes
+            updated = stn_dict != old_dict
             if created or updated:
                 stn.save()
 

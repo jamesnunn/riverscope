@@ -1,6 +1,6 @@
 import pytest
 
-from utils import utils
+from stations.management.commands import utils
 
 def test_stations_url_tokenising():
     url = utils.stations_url(rloiid='lor em', search='Ips!"£$%^&*()_+{}:;@\'~#<>?,./|\¬`um',
