@@ -1,5 +1,4 @@
 redis
 requests
 django
-django-leaflet
 -e git://www.github.com/jamesnunn/logger.git@master#egg=logger
