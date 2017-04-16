@@ -42,29 +42,39 @@ class Command(BaseCommand):
         LOG.info('Getting stations...')
         counter = 0
         count_created = 0
+        count_updated = 0
         time_start = utils.start_timer()
         stations = utils.get_river_stations(
             with_typical_range=options['with_typical_range'], parameter='level',
             qualifier='Stage', limit=10000)
-        for s in stations:
-            sdict = s._asdict()
+        for stn in stations:
+            stn_dict = stn._asdict()
             # pop out these variables as we will use them separately
-            stn_ref = sdict.pop('station_ref')
-            stn_pt = sdict.pop('point')
+            stn_ref = stn_dict.pop('station_ref')
+            stn_pt = stn_dict.pop('point')
+            # create a copy of the dict to later check if it has been updated
+            old_dict = stn_dict
             # Only add if doesn't exist, update if it does.
             try:
-                stn, created = Station.objects.update_or_create(station_ref=stn_ref,
+                stn, created = Station.objects.update_or_create(
+                    station_ref=stn_ref,
                     point=GEOSGeometry('POINT ({} {})'.format(*stn_pt)),
-                    defaults=sdict)
+                    defaults=stn_dict)
+                updated = stn_dict != old_dict
             except OperationalError as err:
                 LOG.error('ERROR: ' + ' '.join((str(err).split())))
                 sys.exit(1)
 
+            # only save if there are changes to save writes
+            if created or updated:
+                stn.save()
+
             if created:
                 count_created += 1
+            if updated:
+                count_updated += 1
             counter += 1
-            stn.save()
 
         time_diff = utils.end_timer(time_start)
-        LOG.info('Loaded {} new station(s) of {} in {}'.format(
-            count_created, counter, time_diff))
+        LOG.info('Added {}, updated {} stations of {} in {}'.format(
+            count_created, count_updated, counter, time_diff))
