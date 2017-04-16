@@ -17,7 +17,7 @@ class ParameterError(Exception):
 
 
 Station = namedtuple('Station', 'station_ref rloiid url town river_name '
-                     'label lat lon stage_scale_url typical_low typical_high')
+                     'label stage_scale_url typical_low typical_high point')
 
 
 def stations_url(rloiid=None, search=None, qualifier=None, status=None,
@@ -145,7 +145,7 @@ def get_river_stations(with_typical_range=False, **kwargs):
         town = station.get('town')
         label = station.get('label')
         stage_scale_url = station.get('stageScale')
-        station_ref = station['stationReference']
+        station_ref = station['notation']
         rloiid = station.get('RLOIid')
         try:
             lat = float(station['lat'])
@@ -165,11 +165,11 @@ def get_river_stations(with_typical_range=False, **kwargs):
                 pass
 
             if stage_scale:
-                typical_low = stage_scale['items']['typicalRangeLow']
-                typical_high = stage_scale['items']['typicalRangeHigh']
+                typical_low = float(stage_scale['items']['typicalRangeLow'])
+                typical_high = float(stage_scale['items']['typicalRangeHigh'])
 
         station = Station(station_ref, rloiid, url, town, river_name, label,
-                          lat, lon, stage_scale_url, typical_low, typical_high)
+                         stage_scale_url, typical_low, typical_high, (lon, lat))
 
         yield station
 

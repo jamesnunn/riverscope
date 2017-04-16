@@ -16,12 +16,6 @@ setup(
     extras_require={
         'dev': [str(requirement.req) for requirement in dev_requirements]
     },
-    dependency_links=['http://github.com/jamesnunn/logger/tarball/master#egg=logger'],
-    entry_points={
-      'console_scripts': [
-          'cache_stations = utils.cli:cache_stations',
-        ]
-    },
-
+    dependency_links=['http://github.com/jamesnunn/logger/tarball/master#egg=logger']
   )
 
