@@ -1,12 +1,12 @@
-#RiverScope
+# RiverScope
 
 A website to display river levels and level trends across all gauging stations in the UK, and provide customisable alerts on river levels. It will be useful for anyone using rivers for business or recreation, such as kayakers looking for high, fast water, pleasure boat owners who may need to adjust mooring lines, anglers looking for slow water and people with flood concerns.
 
-##Requirements
+## Requirements
 
 This application is built using Django and Python 3
 
-##Installation
+## Installation
 
 .. code:: bash
 
