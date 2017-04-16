@@ -1,8 +1,10 @@
-import os
 import logging
+import os
+import sys
 
 from django.core.management.base import BaseCommand, CommandError
 from django.contrib.gis.geos import GEOSGeometry
+from django.db.utils import OperationalError
 
 import logger
 
@@ -46,16 +48,23 @@ class Command(BaseCommand):
             qualifier='Stage', limit=10000)
         for s in stations:
             sdict = s._asdict()
+            # pop out these variables as we will use them separately
             stn_ref = sdict.pop('station_ref')
             stn_pt = sdict.pop('point')
+            # Only add if doesn't exist, update if it does.
+            try:
+                stn, created = Station.objects.update_or_create(station_ref=stn_ref,
+                    point=GEOSGeometry('POINT ({} {})'.format(*stn_pt)),
+                    defaults=sdict)
+            except OperationalError as err:
+                LOG.error('ERROR: ' + ' '.join((str(err).split())))
+                sys.exit(1)
 
-            stn, created = Station.objects.update_or_create(station_ref=stn_ref,
-                point=GEOSGeometry('POINT ({} {})'.format(*stn_pt)),
-                defaults=sdict)
             if created:
                 count_created += 1
             counter += 1
             stn.save()
+
         time_diff = utils.end_timer(time_start)
         LOG.info('Loaded {} new station(s) of {} in {}'.format(
             count_created, counter, time_diff))
