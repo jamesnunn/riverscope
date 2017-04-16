@@ -8,19 +8,19 @@ This application is built using Django and Python 3
 
 ## Installation
 
-.. code:: bash
-
-    # Clone the repository
-    git clone https://github.com/jamesnunn/riverscope.git
-    # Change into the cloned repository
-    cd riverscope
-    # Create a virtual environment (note this application uses python3)
-    virtualenv venv_riverscope -p python3
-    # Activate the virtual environment
-    source venv_riverscope/bin/activate
-    # Install production dependencies
-    pip install -r requirements.txt
-    # Install development dependencies
-    pip install -r requirements_dev.txt
-    # Run tests
-    pytest test
+```bash
+# Clone the repo
+$ git clone https://github.com/jamesnunn/riverscope.git
+# Change into the cloned repo
+$ cd riverscope
+# Create a virtual environment (note we use python3)
+$ virtualenv venv_riverscope -p python3
+# Activate the virtual environment
+$ source venv_riverscope/bin/activate
+# Install production dependencies
+$ pip install -r requirements.txt
+# Install development dependencies
+$ pip install -r requirements_dev.txt
+# Run tests
+$ pytest test
+```
