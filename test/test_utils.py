@@ -1,6 +1,6 @@
 import pytest
 
-from riverscope.utils import utils
+from utils import utils
 
 def test_stations_url_tokenising():
     url = utils.stations_url(rloiid='lor em', search='Ips!"£$%^&*()_+{}:;@\'~#<>?,./|\¬`um',

@@ -12,7 +12,7 @@ import redis
 import logger
 
 from . import utils
-from riverscope._version import __app_name__, __version__
+from _version import __app_name__, __version__
 
 LOG = logger.FilePrintLogger('cache_stations')
 
@@ -83,7 +83,7 @@ def parse_args(parser):
 
     # Show the program version info
     if args.version:
-        print(' '.join(__app_name__, __version__))
+        print(' '.join((__app_name__, __version__)))
         sys.exit()
 
     # Setup logger with levels and path
