@@ -1,15 +1,19 @@
 from django.contrib.gis.db import models as models
 
 
-class Stations(models.Model)
-    station_ref = models.Charfield()
-    rloiid = models.Charfield()
-    url = models.Charfield()
-    town = models.Charfield()
-    river_name = models.Charfield()
-    label = models.Charfield()
-    lat = models.Floatfield()
-    lon = models.Floatfield()
-    stage_scale_url = models.Charfield()
-    typical_low = models.Floatfield()
-    typical_high = models.Floatfield()
+class Stations(models.Model):
+    station_ref = models.CharField(max_length=50)
+    rloiid = models.IntegerField()
+    url = models.CharField(max_length=150)
+    town = models.CharField(max_length=100)
+    river_name = models.CharField(max_length=50)
+    label = models.CharField(max_length=100)
+    lat = models.FloatField()
+    lon = models.FloatField()
+    stage_scale_url = models.CharField(max_length=150)
+    typical_low = models.FloatField()
+    typical_high = models.FloatField()
+    point = models.PointField(default=None)
+
+    def __str__(self):
+        return self.url
