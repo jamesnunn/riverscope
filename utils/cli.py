@@ -11,7 +11,7 @@ import sys
 import redis
 import logger
 
-from . import utils
+from utils import utils
 from _version import __app_name__, __version__
 
 LOG = logger.FilePrintLogger('cache_stations')
