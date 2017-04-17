@@ -14,4 +14,4 @@ class Stations(models.Model):
     point = models.PointField(default=None)
 
     def __str__(self):
-        return self.url
+        return station_ref
