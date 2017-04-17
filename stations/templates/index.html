@@ -15,18 +15,38 @@
     <h2>My Map</h2>
     <div id="map" class="map"></div>
     <script type="text/javascript">
+selector = 'map';
+
+var features = new ol.format.GeoJSON().readFeatures('{{stations|escapejs}}',
+                                                    {featureProjection: 'EPSG:3857'});
+
+var vS=new ol.source.Vector(
+  ({
+    features: features
+  })
+);
+
+var vL= new ol.layer.Vector({source: vS});
       var map = new ol.Map({
         target: 'map',
         layers: [
           new ol.layer.Tile({
             source: new ol.source.OSM()
-          })
+          }),
+        vL
         ],
+        target: selector,
         view: new ol.View({
-          center: ol.proj.fromLonLat([37.41, 8.82]),
-          zoom: 4
+          center: ol.proj.fromLonLat([-3.4360, 55.3781]),
+          zoom: 6
         })
       });
+
+
+
+
+
+
     </script>
   </body>
 </html>
