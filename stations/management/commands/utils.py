@@ -147,6 +147,7 @@ def get_river_stations(with_typical_range=False, **kwargs):
         stage_scale_url = station.get('stageScale')
         station_ref = station['notation']
         rloiid = station.get('RLOIid')
+        rloiid = int(rloiid) if rloiid else None
         try:
             lat = float(station['lat'])
             lon = float(station['long'])
@@ -165,8 +166,11 @@ def get_river_stations(with_typical_range=False, **kwargs):
                 pass
 
             if stage_scale:
-                typical_low = float(stage_scale['items']['typicalRangeLow'])
-                typical_high = float(stage_scale['items']['typicalRangeHigh'])
+                try:
+                    typical_low = float(stage_scale['items']['typicalRangeLow'])
+                    typical_high = float(stage_scale['items']['typicalRangeHigh'])
+                except KeyError:
+                    pass
 
         station = Station(station_ref, rloiid, url, town, river_name, label,
                          stage_scale_url, typical_low, typical_high, (lon, lat))

@@ -8,6 +8,7 @@ from django.db.utils import OperationalError
 
 import logger
 
+from django.core.exceptions import ObjectDoesNotExist
 from stations.models import Stations as Station
 import stations.management.commands.utils as utils
 
@@ -43,19 +44,26 @@ class Command(BaseCommand):
         count_created = 0
         count_updated = 0
         time_start = utils.start_timer()
-        stations = utils.get_river_stations(
+        found_stations = utils.get_river_stations(
             with_typical_range=options['with_typical_range'], parameter='level',
             qualifier='Stage', limit=10000)
-        for stn in stations:
-            stn_dict = stn._asdict()
+        for stn in found_stations:
+            stn_dict = dict(stn._asdict())
             # pop out these variables as we will use them separately
             stn_ref = stn_dict.pop('station_ref')
             stn_pt = stn_dict.pop('point')
-            # create a copy of the dict to later check if it has been updated
-            old_dict = stn_dict
             # Only add if doesn't exist, update if it does.
             try:
-                stn, created = Station.objects.update_or_create(
+                exist_stn = Station.objects.get(station_ref=stn_ref)
+                exist_stn_dict = {k: v for k, v in exist_stn.__dict__.items() if k in stn_dict}
+                # get the new attributes to check if it has been updated
+                updated = exist_stn_dict != stn_dict
+            except ObjectDoesNotExist:
+                exist_stn = None
+                updated = False
+
+            try:
+                obj, created = Station.objects.update_or_create(
                     station_ref=stn_ref,
                     point=GEOSGeometry('POINT ({} {})'.format(*stn_pt)),
                     defaults=stn_dict)
@@ -64,14 +72,13 @@ class Command(BaseCommand):
                 sys.exit(1)
 
             # only save if there are changes, to reduce writes
-            updated = stn_dict != old_dict
-            if created or updated:
-                stn.save()
-
             if created:
+                obj.save()
                 count_created += 1
+
             if updated:
                 count_updated += 1
+
             counter += 1
 
         time_diff = utils.end_timer(time_start)
