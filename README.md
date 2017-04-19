@@ -56,7 +56,14 @@ $ python manage.py migrate
 # Set up a superuser and start the server
 $ python manage.py createsuperuser
 $ python manage.py runserver
+# Run tests
+$ pytest test
 ```
 
-## Run tests
-$ pytest test
+## Management
+```bash
+# Update the database with stations published by the EA
+$ python manage.py getstations
+# Optionally use `-r` to get the stage typical level range but this takes minutes to run
+$ python manage.py getstations -r
+```
