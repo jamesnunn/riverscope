@@ -16,7 +16,7 @@ class Stations(models.Model):
     point = models.PointField(default=None)
 
     def __str__(self):
-        return station_ref
+        return self.station_ref
 
 
 class Units(models.Model):
