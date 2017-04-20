@@ -7,7 +7,7 @@ A website to display river levels and level trends across all gauging stations i
 This application is built using Django and Python 3
 
 ## Installation
-
+### Set up the database
 ```bash
 # Designed for Ubuntu, install the required dependency packages
 $ sudo apt-get update
@@ -15,28 +15,20 @@ $ sudo apt-get install libpq-dev postgresql postgresql-contrib postgis*
 # Set up the database owner for RiverScope
 $ sudo su - postgres
 $ psql
-```
-
-```psql
 postgres=# CREATE USER riverscopeowner WITH PASSWORD 'password';
 postgres=# ALTER ROLE riverscopeowner SET client_encoding TO 'utf8';
 postgres=# ALTER ROLE riverscopeowner SET default_transaction_isolation TO 'read committed';
 postgres=# ALTER ROLE riverscopeowner SET timezone TO 'UTC';
 postgres=# CREATE DATABASE riverscope OWNER riverscopeowner;
 postgres=# \connect riverscope;
-riverscope=# CREATE EXTENSION postgis;
+postgres=# CREATE EXTENSION postgis;
 postgres=# \q;
-```
-
-```bash
-# Check that we can login to the db with psql
+# Check that we can login to the db with new user
 $ psql -U riverscopeowner -h localhost -d riverscope
-```
-
-```psql
 riverscope=> \q
 ```
 
+### Clone repo, install dependencies and setup
 ```bash
 # Clone the repo
 $ git clone https://github.com/jamesnunn/riverscope.git
@@ -61,8 +53,9 @@ $ pytest test
 ```
 
 ## Management
+### Update the database with stations published by the EA
+
 ```bash
-# Update the database with stations published by the EA
 $ python manage.py getstations
 # Optionally use `-r` to get the stage typical level range but this takes minutes to run
 $ python manage.py getstations -r
