@@ -1,4 +1,5 @@
 import pytest
+import datetime
 
 from stations.management.commands import utils
 
@@ -46,3 +47,15 @@ def test_get_river_stations_something():
 def test_get_river_stations_nothing():
     stns = list(utils.get_river_stations(station_ref='E8360', search='blah'))
     assert stns == []
+
+def test_readings_url_tokenising():
+    url = utils.readings_url(latest=True, today=True,
+        date=datetime.date(2015, 5, 18), since=datetime.date(2015, 5, 18),
+        limit=10, date_range=(datetime.date(2015, 5, 18), datetime.date(2015, 5, 29)),
+        parameter='level', qualifier='Stage', sorted=True, station_ref='blah')
+
+    exp_url = ('https://environment.data.gov.uk/flood-monitoring/id/stations/'
+        'blah/readings?latest&today&date=2015-05-18&startdate=2015-05-18&'
+        'enddate=2015-05-29&since=2015-05-18&parameter=level&qualifier=Stage'
+        '&_limit=10&_sorted')
+    assert url == exp_url
