@@ -19,7 +19,7 @@
     <title>RiverScope</title>
   </head>
   <body>
-    <div id="map" class="map"><div id="popup"></div></div>
+    <div id="map" class="map"><div id="point_popup"></div></div>
     <script type="text/javascript">
 
       var point_style = new ol.style.Style({
@@ -56,11 +56,11 @@
         })
       });
 
-      var popup = document.getElementById('popup');
+      var point_popup = document.getElementById('point_popup');
 
       // Add an overlay for point-click popup
       var popup = new ol.Overlay({
-        popup: popup,
+        element: point_popup,
         positioning: 'bottom-center',
         stopEvent: false,
         offset: [0, -10]
@@ -73,14 +73,14 @@
         if (feature) {
           var coordinates = feature.getGeometry().getCoordinates();
           popup.setPosition(coordinates);
-          $(popup).popover({
+          $(point_popup).popover({
             'placement': 'top',
             'html': true
           });
-          $(popup).attr('data-content', feature.get('label'));
-          $(popup).popover('show');
+          $(point_popup).attr('data-content', feature.get('label'));
+          $(point_popup).popover('show');
         } else {
-          $(popup).popover('destroy');
+          $(point_popup).popover('destroy');
         }
       };
       map.on('click', onclick_event);
@@ -88,7 +88,7 @@
       // change mouse cursor when over marker
       function onmove_event(event) {
         if (event.dragging) {
-          $(popup).popover('destroy');
+          $(point_popup).popover('destroy');
           return;
         }
         var pixel = map.getEventPixel(event.originalEvent);
