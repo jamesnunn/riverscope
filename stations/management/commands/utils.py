@@ -179,7 +179,7 @@ def get_river_stations(with_typical_range=False, **kwargs):
         rloiid = int(rloiid) if rloiid else None
         measure = station.get('measures')
         if measure:
-            measure_url = measure[0]['@id']
+            measure = measure[0]['@id'].split('/')[-1]
         try:
             lat = float(station['lat'])
             lon = float(station['long'])
@@ -193,6 +193,7 @@ def get_river_stations(with_typical_range=False, **kwargs):
         if with_typical_range and stage_scale_url:
             try:
                 # Not all stations have a stageScale
+                # TODO Multithread this
                 stage_scale = get_url_json_response(station['stageScale'])
             except KeyError:
                 pass
@@ -205,7 +206,7 @@ def get_river_stations(with_typical_range=False, **kwargs):
                     pass
 
         station = Station(station_ref, rloiid, url, town, river_name, label,
-                         stage_scale_url, typical_low, typical_high, measure_url,
+                         stage_scale_url, typical_low, typical_high, measure,
                          (lon, lat))
 
         yield station
@@ -214,7 +215,7 @@ def get_river_stations(with_typical_range=False, **kwargs):
 @build_ea_station_url
 def readings_url(latest=False, today=False, date=None, since=None, limit=None,
                  date_range=None, parameter=None, qualifier=None, sort=False,
-                 station_ref=None, measure_url=None):
+                 station_ref=None, measure=None):
     """Get readings matching the filter arguments passed. Returns a url.
 
         latest: bool
@@ -262,18 +263,8 @@ def readings_url(latest=False, today=False, date=None, since=None, limit=None,
             this done before the limits is applied thus enabling you to fetch
             the most recent n readings.
 
-
-
-To list all readings (not very useful without filtering):
-
-http://environment.data.gov.uk/flood-monitoring/data/readings
-To list all readings for a particular measure:
-
-http://environment.data.gov.uk/flood-monitoring/id/measures/{id}/readings
-To list all readings from a particular station:
-
-http://environment.data.gov.uk/flood-monitoring/id/stations/{id}/readings
-
+        measure
+            Get readings from this measure url.
     """
     if qualifier and qualifier not in QUALIFIERS:
         raise ParameterError(
@@ -284,8 +275,8 @@ http://environment.data.gov.uk/flood-monitoring/id/stations/{id}/readings
     if date_range:
         if date_range[0] > date_range[1]:
             raise ParameterError('Dates must be ordered earliest to latest.')
-    if station_ref and measure_url:
-        raise ParameterError('Only one of station_ref or measure_url is allowed.')
+    if station_ref and measure:
+        raise ParameterError('Only one of station_ref or measure is allowed.')
 
     date_fmt = '%Y-%m-%d'
 
@@ -302,11 +293,11 @@ http://environment.data.gov.uk/flood-monitoring/id/stations/{id}/readings
         '_sorted' if sort else None
         )
 
-    if not station_ref and not measure_url:
+    if not station_ref and not measure:
         url_tokens = ('data', 'readings')
     elif station_ref:
         url_tokens = ('id', 'stations', station_ref, 'readings')
-    elif measure_url:
-        url_tokens = ('id', 'measures', measure_url, 'readings')
+    elif measure:
+        url_tokens = ('id', 'measures', measure, 'readings')
 
     return url_tokens, tokens

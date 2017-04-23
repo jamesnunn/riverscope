@@ -13,7 +13,7 @@ class Stations(models.Model):
     stage_scale_url = models.CharField(max_length=150, null=True)
     typical_low = models.FloatField(null=True)
     typical_high = models.FloatField(null=True)
-    measure_url = models.CharField(max_length=150)
+    measure = models.CharField(max_length=150)
     point = models.PointField(default=None)
 
     def __str__(self):
@@ -33,17 +33,17 @@ class ReadingConditionTypes(models.Model):
 
 
 class StationReadings(models.Model):
-    station_id = models.ForeignKey(Stations, on_delete=models.CASCADE)
+    station = models.ForeignKey(Stations, on_delete=models.CASCADE)
     measure = models.FloatField()
-    units = models.ForeignKey(Units)
+    # units = models.ForeignKey(Units)
     datetime = models.DateTimeField()
-    reading_type = models.ForeignKey(ReadingTypes)
+    # reading_type = models.ForeignKey(ReadingTypes)
 
 
 class Alert(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
-    station_id = models.ForeignKey(Stations, on_delete=models.CASCADE)
-    reading_type_id = models.ForeignKey(ReadingTypes)
+    station = models.ForeignKey(Stations, on_delete=models.CASCADE)
+    reading_type = models.ForeignKey(ReadingTypes)
     reading_condition_type_id = models.ForeignKey(ReadingConditionTypes)
     reading_min = models.FloatField(null=True)
     reading_max = models.FloatField(null=True)

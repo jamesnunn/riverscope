@@ -9,7 +9,7 @@ from django.db.utils import OperationalError
 import logger
 
 from django.core.exceptions import ObjectDoesNotExist
-from stations.models import Stations as Station
+from stations.models import Stations
 import stations.management.commands.utils as utils
 
 
@@ -54,7 +54,7 @@ class Command(BaseCommand):
             stn_pt = stn_dict.pop('point')
             # Only add if doesn't exist, update if it does.
             try:
-                exist_stn = Station.objects.get(station_ref=stn_ref)
+                exist_stn = Stations.objects.get(station_ref=stn_ref)
                 exist_stn_dict = {k: v for k, v in exist_stn.__dict__.items() if k in stn_dict}
                 # get the new attributes to check if it has been updated
                 updated = exist_stn_dict != stn_dict
@@ -63,7 +63,7 @@ class Command(BaseCommand):
                 updated = False
 
             try:
-                obj, created = Station.objects.update_or_create(
+                obj, created = Stations.objects.update_or_create(
                     station_ref=stn_ref,
                     point=GEOSGeometry('POINT ({} {})'.format(*stn_pt)),
                     defaults=stn_dict)
