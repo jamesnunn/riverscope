@@ -38,7 +38,8 @@ def get_url_json_response(url):
 
 
 Station = namedtuple('Station', 'station_ref rloiid url town river_name '
-                     'label stage_scale_url typical_low typical_high point')
+                     'label stage_scale_url typical_low typical_high '
+                     'measure_url point')
 
 
 def build_ea_station_url(func):
@@ -46,16 +47,13 @@ def build_ea_station_url(func):
         url_elements, tokens = func(*args, **kwargs)
 
         url_elements = list(filter(None, url_elements)) if url_elements else None
-
-        if url_elements:
-            url_token = '/'.join((['/id/stations'] + url_elements))
-        else:
-            url_token = '/id/stations'
-
-
+        url_token = '/'.join(url_elements) if url_elements else ''
         filter_tokens = '&'.join(filter(None, tokens))
-        safe_url_tokens = urllib.parse.quote(filter_tokens, safe="&$,+/:;=?@#")
-        return EA_API_ROOT + url_token + '?' + safe_url_tokens
+        if filter_tokens:
+            safe_filter_tokens = '?' + urllib.parse.quote(filter_tokens, safe="&$,+/:;=?@#")
+        else:
+            safe_filter_tokens = ''
+        return EA_API_ROOT + '/' + url_token + safe_filter_tokens
     return wrapper
 
 
@@ -152,7 +150,7 @@ def stations_url(rloiid=None, search=None, qualifier=None, status=None,
         'status={}'.format(status) if status else None,
         '_limit={}'.format(limit) if limit else None)
 
-    return None, tokens
+    return (('id', 'stations'), tokens)
 
 
 def get_river_stations(with_typical_range=False, **kwargs):
@@ -179,6 +177,9 @@ def get_river_stations(with_typical_range=False, **kwargs):
         station_ref = station['notation']
         rloiid = station.get('RLOIid')
         rloiid = int(rloiid) if rloiid else None
+        measure = station.get('measures')
+        if measure:
+            measure_url = measure[0]['@id']
         try:
             lat = float(station['lat'])
             lon = float(station['long'])
@@ -204,15 +205,16 @@ def get_river_stations(with_typical_range=False, **kwargs):
                     pass
 
         station = Station(station_ref, rloiid, url, town, river_name, label,
-                         stage_scale_url, typical_low, typical_high, (lon, lat))
+                         stage_scale_url, typical_low, typical_high, measure_url,
+                         (lon, lat))
 
         yield station
 
 
 @build_ea_station_url
 def readings_url(latest=False, today=False, date=None, since=None, limit=None,
-                 date_range=None, parameter=None, qualifier=None, sorted=True,
-                 station_ref=None):
+                 date_range=None, parameter=None, qualifier=None, sort=False,
+                 station_ref=None, measure_url=None):
     """Get readings matching the filter arguments passed. Returns a url.
 
         latest: bool
@@ -255,10 +257,23 @@ def readings_url(latest=False, today=False, date=None, since=None, limit=None,
             Limits the number of results to `limit`. If used in conjuction with
             `sorted=True`, will return the latest `limit` readings.
 
-        sorted
+        sort
             Order the array of returned readings into descending order by date,
             this done before the limits is applied thus enabling you to fetch
             the most recent n readings.
+
+
+
+To list all readings (not very useful without filtering):
+
+http://environment.data.gov.uk/flood-monitoring/data/readings
+To list all readings for a particular measure:
+
+http://environment.data.gov.uk/flood-monitoring/id/measures/{id}/readings
+To list all readings from a particular station:
+
+http://environment.data.gov.uk/flood-monitoring/id/stations/{id}/readings
+
     """
     if qualifier and qualifier not in QUALIFIERS:
         raise ParameterError(
@@ -269,6 +284,8 @@ def readings_url(latest=False, today=False, date=None, since=None, limit=None,
     if date_range:
         if date_range[0] > date_range[1]:
             raise ParameterError('Dates must be ordered earliest to latest.')
+    if station_ref and measure_url:
+        raise ParameterError('Only one of station_ref or measure_url is allowed.')
 
     date_fmt = '%Y-%m-%d'
 
@@ -282,7 +299,14 @@ def readings_url(latest=False, today=False, date=None, since=None, limit=None,
         'parameter={}'.format(parameter) if parameter else None,
         'qualifier={}'.format(qualifier) if qualifier else None,
         '_limit={}'.format(limit) if limit else None,
-        '_sorted' if sorted else None
+        '_sorted' if sort else None
         )
 
-    return (station_ref, 'readings'), tokens
+    if not station_ref and not measure_url:
+        url_tokens = ('data', 'readings')
+    elif station_ref:
+        url_tokens = ('id', 'stations', station_ref, 'readings')
+    elif measure_url:
+        url_tokens = ('id', 'measures', measure_url, 'readings')
+
+    return url_tokens, tokens

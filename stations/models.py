@@ -13,6 +13,7 @@ class Stations(models.Model):
     stage_scale_url = models.CharField(max_length=150, null=True)
     typical_low = models.FloatField(null=True)
     typical_high = models.FloatField(null=True)
+    measure_url = models.CharField(max_length=150)
     point = models.PointField(default=None)
 
     def __str__(self):

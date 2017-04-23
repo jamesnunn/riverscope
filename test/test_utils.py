@@ -52,7 +52,7 @@ def test_readings_url_tokenising():
     url = utils.readings_url(latest=True, today=True,
         date=datetime.date(2015, 5, 18), since=datetime.date(2015, 5, 18),
         limit=10, date_range=(datetime.date(2015, 5, 18), datetime.date(2015, 5, 29)),
-        parameter='level', qualifier='Stage', sorted=True, station_ref='blah')
+        parameter='level', qualifier='Stage', sort=True, station_ref='blah')
 
     exp_url = ('https://environment.data.gov.uk/flood-monitoring/id/stations/'
         'blah/readings?latest&today&date=2015-05-18&startdate=2015-05-18&'
