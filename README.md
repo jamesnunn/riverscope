@@ -59,4 +59,6 @@ $ pytest test
 $ python manage.py getstations
 # Optionally use `-r` to get the stage typical level range but this takes minutes to run
 $ python manage.py getstations -r
+# Get latest 10 readings per station
+$ python manage.py getreadings
 ```
