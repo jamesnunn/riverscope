@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 import logging
 import os
 import sys
-from multiprocessing import Pool as ThreadPool
+from multiprocessing import Pool
 
 from django.core.management.base import BaseCommand, CommandError
 from django.db.utils import OperationalError
@@ -18,8 +18,7 @@ LOG = logger.FilePrintLogger(__name__)
 
 
 def get_readings(station):
-    url = utils.readings_url(measure=station.measure, sort=True,
-                             limit=10)
+    url = utils.readings_url(measure=station.measure, sort=True, limit=10)
     try:
         measures = utils.get_url_json_response(url)
         for measure in measures['items']:
@@ -43,7 +42,6 @@ class Command(BaseCommand):
                             default=os.path.join(os.path.expanduser('~')),
                             metavar='path')
 
-
     def handle(self, *args, **options):
         # Setup logger with levels and path
         log_path = os.path.join(options['log'], 'riverscope', __name__ + '_log.txt')
@@ -54,12 +52,9 @@ class Command(BaseCommand):
             LOG.set_print_handler_level(logging.INFO)
             LOG.set_file_handler(log_path, logging.INFO)
 
-        counter = 0
-        count_created = 0
-
         time_start = utils.start_timer()
-
-        pool = ThreadPool(50)
+        pool = Pool(50)
+        # TODO bulk load by truncating and loading list of objects within a transaction
         results = pool.map(get_readings, Stations.objects.all())
         time_diff = utils.end_timer(time_start)
         print(time_diff)
