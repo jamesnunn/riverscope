@@ -19,7 +19,16 @@
     <title>RiverScope</title>
   </head>
   <body>
-    <div id="map" class="map"><div id="point_popup"></div></div>
+    <div id="map" class="map">
+      <div id="point_popup"
+           tabindex="0"
+           role="button"
+           data-html="true"
+           data-toggle="popover"
+           data-trigger="focus">
+     </div>
+    </div>
+
     <script type="text/javascript">
 
       var point_style = new ol.style.Style({
@@ -67,34 +76,34 @@
       });
       map.addOverlay(popup);
 
-      // display popup on click
-      function onclick_event(event) {
+      // change mouse cursor when over marker
+      function onmove_event(event) {
+        var pixel = map.getEventPixel(event.originalEvent);
+        var hit = map.hasFeatureAtPixel(pixel);
+        if (hit) {
+          map.getTargetElement().style.cursor = 'pointer';
         var feature = map.forEachFeatureAtPixel(event.pixel, function(feature) {return feature;});
         if (feature) {
           var coordinates = feature.getGeometry().getCoordinates();
           popup.setPosition(coordinates);
           $(point_popup).popover({
             'placement': 'top',
-            'html': true
+            'html': true,
           });
-          $(point_popup).attr('data-content', feature.get('label'));
+
+          var typical_range;
+          if (feature.get('typical_low') === null | feature.get('typical_high') === null) {
+            typical_range = "";
+          } else {
+            typical_range = "Typical range: " + feature.get('typical_low') + feature.get('typical_high');
+          }
+
+          $(point_popup).attr('data-content', typical_range);
+          $(point_popup).attr('data-original-title', "<div><a href='" + feature.get('url') + "'><b>" + feature.get('label') + "</b></a></div>");
           $(point_popup).popover('show');
         } else {
           $(point_popup).popover('destroy');
         }
-      };
-      map.on('click', onclick_event);
-
-      // change mouse cursor when over marker
-      function onmove_event(event) {
-        if (event.dragging) {
-          $(point_popup).popover('destroy');
-          return;
-        }
-        var pixel = map.getEventPixel(event.originalEvent);
-        var hit = map.hasFeatureAtPixel(pixel);
-        if (hit) {
-          map.getTargetElement().style.cursor = 'pointer';
         } else {
           map.getTargetElement().style.cursor = '';
         }

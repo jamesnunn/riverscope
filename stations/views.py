@@ -9,5 +9,7 @@ from stations.models import Stations
 def index(request):
     stations = serialize('geojson', Stations.objects.all(),
           geometry_field='point',
-          fields=('label',))
+          fields=('label', 'town', 'river_name', 'rloiid', 'url', 'typical_low',
+                  'typical_high'))
     return render_to_response('index.html', {'stations': stations})
+
