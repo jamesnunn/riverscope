@@ -1,15 +1,13 @@
 from datetime import datetime, timedelta, timezone
 import logging
 import os
-import sys
-from multiprocessing import Pool
+from multiprocessing.pool import ThreadPool
 
-from django.core.management.base import BaseCommand, CommandError
-from django.db.utils import OperationalError
+from django.core.management.base import BaseCommand
+from django.db import transaction
 
 import logger
 
-from django.core.exceptions import ObjectDoesNotExist
 from stations.models import Stations, StationReadings
 import stations.management.commands.utils as utils
 
@@ -25,7 +23,8 @@ def get_readings(station):
             date = datetime.strptime(measure['dateTime'], '%Y-%m-%dT%H:%M:%SZ')
             date = date.replace(tzinfo=timezone.utc)
             value = float(measure['value'])
-            StationReadings.objects.create(station=station, datetime=date, measure=value)
+            return StationReadings(station=station, datetime=date, measure=value)
+            # StationReadings.objects.create(station=station, datetime=date, measure=value)
     except Exception as err:
         LOG.warning('Skipped measures for {}: {}'.format(station.station_ref, str(err)))
 
@@ -34,7 +33,7 @@ class Command(BaseCommand):
     help = 'Get latest readings for stations.'
 
     def add_arguments(self, parser):
-        parser.add_argument('-n', '--lastn', type=int, default=10,
+        parser.add_argument('-n', '--lastn', type=int, default=5,
                             help='Get last n measures.')
         parser.add_argument('-d', '--debug', action='store_true',
                             help='Run in debug mode')
@@ -50,11 +49,14 @@ class Command(BaseCommand):
             LOG.set_file_handler(log_path, logging.DEBUG)
         else:
             LOG.set_print_handler_level(logging.INFO)
-            LOG.set_file_handler(log_path, logging.INFO)
+            LOG.set_file_handler(log_path, logging.DEBUG)
 
         time_start = utils.start_timer()
-        pool = Pool(50)
-        # TODO bulk load by truncating and loading list of objects within a transaction
+        pool = ThreadPool(100)
+        # TODO http://stackoverflow.com/questions/2632520/what-is-the-fastest-way-to-send-100-000-http-requests-in-python
         results = pool.map(get_readings, Stations.objects.all())
+        with transaction.atomic():
+            StationReadings.objects.all().delete()
+            StationReadings.objects.bulk_create(results)
         time_diff = utils.end_timer(time_start)
-        print(time_diff)
+        LOG.info('Added {} readings in {}'.format(len(results), time_diff))

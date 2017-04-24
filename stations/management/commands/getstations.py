@@ -38,7 +38,7 @@ class Command(BaseCommand):
             LOG.set_file_handler(log_path, logging.DEBUG)
         else:
             LOG.set_print_handler_level(logging.INFO)
-            LOG.set_file_handler(log_path, logging.INFO)
+            LOG.set_file_handler(log_path, logging.DEBUG)
 
         counter = 0
         count_created = 0
