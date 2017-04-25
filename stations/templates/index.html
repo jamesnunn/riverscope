@@ -76,14 +76,20 @@
       });
       map.addOverlay(popup);
 
+
+      var curr_popup_feature;
       // change mouse cursor when over marker
       function onmove_event(event) {
         var pixel = map.getEventPixel(event.originalEvent);
-        var hit = map.hasFeatureAtPixel(pixel);
-        if (hit) {
-          map.getTargetElement().style.cursor = 'pointer';
         var feature = map.forEachFeatureAtPixel(event.pixel, function(feature) {return feature;});
+        // Prevent the popup from flickering on every move
+        if (feature && feature === curr_popup_feature) {
+          return;
+        }
+
         if (feature) {
+          curr_popup_feature = feature;
+          map.getTargetElement().style.cursor = 'pointer';
           var coordinates = feature.getGeometry().getCoordinates();
           popup.setPosition(coordinates);
           $(point_popup).popover({
@@ -99,13 +105,12 @@
           }
 
           $(point_popup).attr('data-content', typical_range);
-          $(point_popup).attr('data-original-title', "<div><a href='" + feature.get('url') + "'><b>" + feature.get('label') + "</b></a></div>");
+          $(point_popup).attr('data-original-title', "<div><b>" + feature.get('label') + "</b></div>");
           $(point_popup).popover('show');
         } else {
           $(point_popup).popover('destroy');
-        }
-        } else {
           map.getTargetElement().style.cursor = '';
+          curr_popup_feature = null;
         }
       };
       map.on('pointermove', onmove_event);
