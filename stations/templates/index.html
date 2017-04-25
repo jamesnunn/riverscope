@@ -101,7 +101,7 @@
           if (feature.get('typical_low') === null | feature.get('typical_high') === null) {
             typical_range = "";
           } else {
-            typical_range = "Typical range: " + feature.get('typical_low') + feature.get('typical_high');
+            typical_range = "Typical range: " + feature.get('typical_low') + ' - ' + feature.get('typical_high');
           }
 
           $(point_popup).attr('data-content', typical_range);
