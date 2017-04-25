@@ -39,7 +39,7 @@ def get_url_json_response(url):
 
 Station = namedtuple('Station', 'station_ref rloiid url town river_name '
                      'label stage_scale_url typical_low typical_high '
-                     'measure_url point')
+                     'measure point')
 
 
 def build_ea_station_url(func):
@@ -186,27 +186,27 @@ def get_river_stations(with_typical_range=False, **kwargs):
         except TypeError:
             continue
 
-        stage_scale = None
-        typical_low = None
-        typical_high = None
+        # stage_scale = None
+        # typical_low = None
+        # typical_high = None
 
-        if with_typical_range and stage_scale_url:
-            try:
-                # Not all stations have a stageScale
-                # TODO Multithread this
-                stage_scale = get_url_json_response(station['stageScale'])
-            except KeyError:
-                pass
+        # if with_typical_range and stage_scale_url:
+        #     try:
+        #         # Not all stations have a stageScale
+        #         # TODO Multithread this
+        #         stage_scale = get_url_json_response(station['stageScale'])
+        #     except KeyError:
+        #         pass
 
-            if stage_scale:
-                try:
-                    typical_low = float(stage_scale['items']['typicalRangeLow'])
-                    typical_high = float(stage_scale['items']['typicalRangeHigh'])
-                except KeyError:
-                    pass
+        #     if stage_scale:
+        #         try:
+        #             typical_low = float(stage_scale['items']['typicalRangeLow'])
+        #             typical_high = float(stage_scale['items']['typicalRangeHigh'])
+        #         except KeyError:
+        #             pass
 
         station = Station(station_ref, rloiid, url, town, river_name, label,
-                         stage_scale_url, typical_low, typical_high, measure,
+                         stage_scale_url, None, None, measure,
                          (lon, lat))
 
         yield station
