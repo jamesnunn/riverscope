@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from itertools import repeat
 import logging
 import os
 from multiprocessing.pool import ThreadPool
@@ -15,15 +16,16 @@ import stations.management.commands.utils as utils
 LOG = logger.FilePrintLogger(__name__)
 
 
-def get_readings(station):
-    url = utils.readings_url(measure=station.measure, sort=True, limit=10)
+def get_readings(station_limit):
+    station, limit = station_limit
+    url = utils.readings_url(measure=station.measure, sort=True, limit=limit)
     station_readings = []
     try:
         measures = utils.get_url_json_response(url)
         for measure in measures['items']:
             date = datetime.strptime(measure['dateTime'], '%Y-%m-%dT%H:%M:%SZ')
             date = date.replace(tzinfo=timezone.utc)
-            value = float(measure['value'])
+            value = round(float(measure['value']), 2)
             station_readings.append(StationReadings(station=station, datetime=date, measure=value))
             # StationReadings.objects.create(station=station, datetime=date, measure=value)
         return station_readings
@@ -56,8 +58,9 @@ class Command(BaseCommand):
         time_start = utils.start_timer()
         pool = ThreadPool(100)
         # TODO http://stackoverflow.com/questions/2632520/what-is-the-fastest-way-to-send-100-000-http-requests-in-python
-        results = list(filter(None, pool.map(get_readings, Stations.objects.all())))
-        station_readings = [s for sl in results for s in sl]
+        results = pool.map(get_readings, zip(Stations.objects.all(), repeat(options['lastn'])))
+        clean_results = list(filter(None, results))
+        station_readings = [s for sl in clean_results for s in sl]
         with transaction.atomic():
             StationReadings.objects.all().delete()
             StationReadings.objects.bulk_create(station_readings)

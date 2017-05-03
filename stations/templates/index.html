@@ -9,6 +9,7 @@
     <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
 
     <style>
       .map {
@@ -16,29 +17,21 @@
         width: 100%;
       }
     </style>
+    {% load static %}
     <title>RiverScope</title>
   </head>
   <body>
     <div id="map" class="map">
-      <div id="point_popup"
-           tabindex="0"
-           role="button"
-           data-html="true"
-           data-toggle="popover"
-           data-trigger="focus">
-     </div>
-    </div>
+      <div id="point_popup" data-toggle="popover">
+      <canvas id="chart_div" style="width: 40px; height: 30px; opacity: 0.0"></canvas>
+      </div>
 
     <script type="text/javascript">
 
       var point_style = new ol.style.Style({
         image: new ol.style.Circle({
-          fill: new ol.style.Fill({
-            color: 'blue'
-          }),
-          stroke: new ol.style.Stroke({
-            color: '#003366'
-          }),
+          fill: new ol.style.Fill({color: 'blue'}),
+          stroke: new ol.style.Stroke({color: '#003366'}),
           radius: 4
         })
       });
@@ -72,7 +65,7 @@
         element: point_popup,
         positioning: 'bottom-center',
         stopEvent: false,
-        offset: [0, -10]
+        offset: [0, 100]
       });
       map.addOverlay(popup);
 
@@ -92,9 +85,10 @@
           map.getTargetElement().style.cursor = 'pointer';
           var coordinates = feature.getGeometry().getCoordinates();
           popup.setPosition(coordinates);
+          displayLineChart(feature.get('measures'), feature.get('measure_datetimes'), feature.get('typical_low'), feature.get('typical_high'));
           $(point_popup).popover({
-            'placement': 'top',
-            'html': true,
+            placement: 'top',
+            html: true
           });
 
           var typical_range;
@@ -104,8 +98,7 @@
             typical_range = "Typical range: " + feature.get('typical_low') + ' - ' + feature.get('typical_high');
           }
 
-          $(point_popup).attr('data-content', typical_range);
-          $(point_popup).attr('data-original-title', "<div><b>" + feature.get('label') + "</b></div>");
+          $(point_popup).attr('data-original-title', "<div><h4>" + feature.get('label') + "</h4></div>");
           $(point_popup).popover('show');
         } else {
           $(point_popup).popover('destroy');
@@ -115,6 +108,37 @@
       };
       map.on('pointermove', onmove_event);
 
+
+function displayLineChart(array, labels, ymin, ymax) {
+    var data = {
+        labels: labels,
+        datasets: [
+            {
+                label: "Station",
+                fillColor: "rgba(220,220,220,1)",
+                strokeColor: "rgba(220,220,220,1)",
+                pointColor: "rgba(220,220,220,1)",
+                pointStrokeColor: "#fff",
+                pointHighlightFill: "#fff",
+                pointHighlightStroke: "rgba(220,220,220,1)",
+                data: array
+            }
+        ],
+      scales: {
+        yAxes: [{
+
+            ticks: {
+                beginAtZero: true,
+                min: ymin,
+                max: ymax
+            }
+        }]
+    }
+    };
+    var ctx = document.getElementById("chart_div");
+    var lineChart = new Chart(ctx, {type: 'line', data: data, options: {animation: false}});
+    $('#point_popup').attr('data-content', '<img id= "chart_img" src=" '+ ctx.toDataURL('image/png') +'" style="width: 100%"/>');
+  }
 
 
     </script>

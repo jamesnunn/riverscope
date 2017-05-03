@@ -1,3 +1,4 @@
+import datetime
 import json
 
 from django.shortcuts import render
@@ -19,35 +20,27 @@ def dictfetchall(cursor):
 
 def get_station_readings():
     with connection.cursor() as cursor:
-        cursor.execute(('select '
-                            's.station_ref, '
-                            's.label, '
-                            's.town, '
-                            's.river_name, '
-                            's.rloiid, '
-                            's.url, '
-                            's.typical_low, '
-                            's.typical_high, '
-                            'st_x(s.point) as lon, '
-                            'st_y(s.point) as lat, '
-                            # Needs to return datetime and order by
-                            'array_agg(r.measure) as measures '
-                        'from stations_stations s '
-                        'left join stations_stationreadings r on s.id = r.station_id '
-                        'group by '
-                            's.station_ref,'
-                            's.label, '
-                            's.town, '
-                            's.river_name, '
-                            's.rloiid, '
-                            's.url, '
-                            's.typical_low, '
-                            's.typical_high,'
-                            'lat,'
-                            'lon'))
+        cursor.execute('select * from station_datetime_readings;')
         return dictfetchall(cursor)
 
+
+def fmt_datetime_in_dict(indictlist):
+    outdictlist = []
+    for d in indictlist:
+        dtlist = d.get('measure_datetimes')
+        if dtlist:
+            outdtlist = []
+            for dt in dtlist:
+                if dt:
+                    newd = datetime.datetime.strptime(dt, '%Y-%m-%d %H:%M:%S+00').strftime('%H:%M %a %w %b')
+                    outdtlist.append(newd)
+            d['measure_datetimes'] = outdtlist
+        outdictlist.append(d)
+    return outdictlist
+
+
 def station_readings_to_geojson(data):
+    newdata = fmt_datetime_in_dict(data)
     geojson = {
     'type': 'FeatureCollection',
     'features': [
@@ -58,7 +51,7 @@ def station_readings_to_geojson(data):
             'coordinates': [d['lon'], d['lat']],
             },
         'properties' : d,
-        } for d in data]
+        } for d in newdata]
     }
     return geojson
 
