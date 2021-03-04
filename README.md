@@ -62,3 +62,4 @@ $ python manage.py getstations -r
 # Get latest 10 readings per station
 $ python manage.py getreadings
 ```
+
